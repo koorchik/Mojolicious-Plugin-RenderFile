@@ -50,7 +50,7 @@ Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious
     plugin 'RenderFile';
     
     # In controller
-    $self->render_file(filepath => '/tmp/files/file.pdf'); # file name will "file.pdf"
+    $self->render_file(filepath => '/tmp/files/file.pdf'); # file name will be "file.pdf"
      
     # Provide any file name
     $self->render_file(filepath => '/tmp/files/file.pdf',  'filename' => 'report.pdf');
