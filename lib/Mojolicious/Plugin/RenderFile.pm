@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use File::Basename;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub register {
     my ( $self, $app ) = @_;
@@ -35,11 +35,11 @@ sub register {
 }
 
 1;
-__END__
+
 
 =head1 NAME
 
-Mojolicious::Plugin::RenderFile - Mojolicious Plugin
+Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious  
 
 =head1 SYNOPSIS
 
@@ -65,7 +65,7 @@ L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_
 
     $self->render_file(filepath => '/tmp/files/file.pdf',  'filename' => 'report.pdf');
 
-With this helper you can easly provide files for download. By default content-type is "application/x-download". Therefore, a browser will ask where to save file.
+With this helper you can easily provide files for download. By default content-type is "application/x-download". Therefore, a browser will ask where to save file.
 
 Register plugin in L<Mojolicious> application.
 
