@@ -1,0 +1,7 @@
+Changes
+MANIFEST
+Makefile.PL
+README.pod
+lib/Mojolicious/Plugin/RenderFile.pm
+t/basic.t
+t/sample.txt
