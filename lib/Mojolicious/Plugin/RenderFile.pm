@@ -26,12 +26,47 @@ sub register {
         my $headers = Mojo::Headers->new();
         $headers->add( 'Content-Type',        'application/x-download;name=' . $filename );
         $headers->add( 'Content-Disposition', 'attachment;filename=' . $filename );
+
+	# Asset
+	my $asset = Mojo::Asset::File->new( path => $filepath );
+
+	# Range
+	# Partially based on Mojolicious::Static
+	my $size = (stat $filepath)[7];
+	if (my $range = $c->req->headers->range) {
+
+	  my $start = 0;
+	  my $end = $size - 1 >= 0 ? $size - 1 : 0;
+
+	  # Check range
+	  if ($range =~ m/^bytes=(\d+)-(\d+)?/ && $1 <= $end) {
+	    $start = $1;
+	    $end = $2 if defined $2 && $2 <= $end;
+
+	    $status = 206;
+	    $headers->add('Content-Length' => $end - $start + 1);
+	    $headers->add('Content-Range' => "bytes $start-$end/$size");
+	  }
+
+	  # Not satisfiable
+	  else {
+	    return $c->rendered(416);
+	  };
+
+	  # Set range for asset
+	  $asset->start_range($start)->end_range($end);
+	}
+
+	else {
+	  $headers->add('Content-Length' => $size);
+	};
+
         $c->res->content->headers($headers);
 
         # Stream content directly from file
-        $c->res->content->asset( Mojo::Asset::File->new( path => $filepath ) );
+        $c->res->content->asset($asset);
         return $c->rendered($status);
-    } );
+    });
 }
 
 1;
