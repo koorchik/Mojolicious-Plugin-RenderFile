@@ -1,4 +1,3 @@
-
 =head1 NAME
 
 Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious  
@@ -29,11 +28,17 @@ L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_
 
 With this helper you can easily provide files for download. By default content-type is "application/x-download". Therefore, a browser will ask where to save file.
 
+This plugin respects HTTP Range headers. 
+
 Register plugin in L<Mojolicious> application.
 
 =head1 AUTHOR
 
 Viktor Turskyi <koorchik@cpan.org>
+
+=head1 CONTRIBUTORS
+
+Nils Diewald (Akron)
 
 =head1 BUGS
 
