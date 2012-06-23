@@ -4,6 +4,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use strict;
 use warnings;
 use File::Basename;
+use Mojo::Util 'quote';
 
 our $VERSION = '0.03';
 
@@ -13,29 +14,41 @@ sub register {
     $app->helper( 'render_file' => sub {
         my $c        = shift;
         my %args     = @_;
-        my $filepath = $args{filepath};
 
-        unless ( -f $filepath && -r $filepath ) {
-            $c->app->log->error("Cannot read file [$filepath]. error [$!]");
-            return;
+	return unless defined $args{filepath} || defined $args{data};
+
+        my $asset;
+        my $filename = $args{filename};
+        my $status   = $args{status} || 200;
+
+        if( $args{filepath} ) {
+
+	    my $filepath = $args{filepath};
+	    unless ( -f $filepath && -r _ ) {
+		$c->app->log->error("Cannot read file [$filepath]. error [$!]");
+		return;
+	    }
+
+            $filename ||= fileparse($filepath);
+            $asset = Mojo::Asset::File->new( path => $args{filepath} );
         }
 
-        my $filename = $args{filename} || fileparse($filepath);
-        my $status   = $args{status}   || 200;
+        else {
+            $filename ||= $c->req->url->path->parts->[-1] || 'download';
+            $asset = Mojo::Asset::Memory->new;
+            $asset->add_chunk( $args{data} );
+        }
+
+	# Quote the filename, per RFC 5987
+	$filename = quote($filename);
 
         my $headers = Mojo::Headers->new();
         $headers->add( 'Content-Type',        'application/x-download;name=' . $filename );
         $headers->add( 'Content-Disposition', 'attachment;filename=' . $filename );
 
-        # Asset
-        my $asset = Mojo::Asset::File->new( path => $filepath );
-
-        # Range
-        # Partially based on Mojolicious::Static
-        my $size = ( stat $filepath )[7];
         if ( my $range = $c->req->headers->range ) {
-
             my $start = 0;
+            my $size = $asset->size;
             my $end = $size - 1 >= 0 ? $size - 1 : 0;
 
             # Check range
@@ -58,7 +71,7 @@ sub register {
         }
 
         else {
-            $headers->add( 'Content-Length' => $size );
+            $headers->add( 'Content-Length' => $asset->size );
         }
 
         $c->res->content->headers($headers);
@@ -68,6 +81,7 @@ sub register {
         return $c->rendered($status);
     } );
 }
+
 
 1;
 
