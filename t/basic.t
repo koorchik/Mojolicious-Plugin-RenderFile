@@ -5,6 +5,8 @@ use Test::More;
 use Mojolicious::Lite;
 use Test::Mojo;
 
+use lib '../lib';
+
 use File::Basename qw/dirname/;
 use File::Spec::Functions qw/rel2abs/;
 
@@ -35,6 +37,20 @@ $t->get_ok('/all_attrs')
     ->content_is('file to download')
     ->content_type_is('application/x-download;name=mysample.txt')
     ->header_is( 'Content-Disposition' => 'attachment;filename=mysample.txt' );
-    
+
+$t->get_ok('/default' => { 'Range' => 'bytes=5-' })
+    ->status_is(206)
+    ->content_is('to download')
+    ->content_type_is('application/x-download;name=sample.txt')
+    ->header_is( 'Content-Disposition' => 'attachment;filename=sample.txt' );
+
+$t->get_ok('/default' => { 'Range' => 'bytes=5-6' })
+    ->status_is(206)
+    ->content_is('to')
+    ->content_type_is('application/x-download;name=sample.txt')
+    ->header_is( 'Content-Disposition' => 'attachment;filename=sample.txt' );
+
+$t->get_ok('/default' => { 'Range' => 'bytes=17-3' })
+    ->status_is(416);
 
 done_testing();

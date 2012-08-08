@@ -5,13 +5,13 @@ use strict;
 use warnings;
 use File::Basename;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub register {
     my ( $self, $app ) = @_;
 
-    $app->helper('render_file' => sub {
-        my $c     = shift;
+    $app->helper( 'render_file' => sub {
+        my $c        = shift;
         my %args     = @_;
         my $filepath = $args{filepath};
 
@@ -26,16 +26,50 @@ sub register {
         my $headers = Mojo::Headers->new();
         $headers->add( 'Content-Type',        'application/x-download;name=' . $filename );
         $headers->add( 'Content-Disposition', 'attachment;filename=' . $filename );
+
+        # Asset
+        my $asset = Mojo::Asset::File->new( path => $filepath );
+
+        # Range
+        # Partially based on Mojolicious::Static
+        my $size = ( stat $filepath )[7];
+        if ( my $range = $c->req->headers->range ) {
+
+            my $start = 0;
+            my $end = $size - 1 >= 0 ? $size - 1 : 0;
+
+            # Check range
+            if ( $range =~ m/^bytes=(\d+)-(\d+)?/ && $1 <= $end ) {
+                $start = $1;
+                $end = $2 if defined $2 && $2 <= $end;
+
+                $status = 206;
+                $headers->add( 'Content-Length' => $end - $start + 1 );
+                $headers->add( 'Content-Range'  => "bytes $start-$end/$size" );
+            }
+
+            # Not satisfiable
+            else {
+                return $c->rendered(416);
+            }
+
+            # Set range for asset
+            $asset->start_range($start)->end_range($end);
+        }
+
+        else {
+            $headers->add( 'Content-Length' => $size );
+        }
+
         $c->res->content->headers($headers);
 
         # Stream content directly from file
-        $c->res->content->asset( Mojo::Asset::File->new( path => $filepath ) );
+        $c->res->content->asset($asset);
         return $c->rendered($status);
     } );
 }
 
 1;
-
 
 =head1 NAME
 
@@ -67,11 +101,17 @@ L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_
 
 With this helper you can easily provide files for download. By default content-type is "application/x-download". Therefore, a browser will ask where to save file.
 
+This plugin respects HTTP Range headers. 
+
 Register plugin in L<Mojolicious> application.
 
 =head1 AUTHOR
 
 Viktor Turskyi <koorchik@cpan.org>
+
+=head1 CONTRIBUTORS
+
+Nils Diewald (Akron)
 
 =head1 BUGS
 
