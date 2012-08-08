@@ -21,7 +21,13 @@ get '/default' => sub {
 
 get '/all_attrs' => sub {
     my $self = shift;
-    $self->render_file( filepath => $FILE, filename => 'mysample.txt', status => 201 );
+    $self->render_file(
+        filepath => $FILE,
+        filename => 'mysample.txt',
+        status => 201,
+        content_type => 'application/pdf',
+        content_disposition => 'inline'
+    );
 };
 
 my $t = Test::Mojo->new;
@@ -35,8 +41,8 @@ $t->get_ok('/default')
 $t->get_ok('/all_attrs')
     ->status_is(201)
     ->content_is('file to download')
-    ->content_type_is('application/x-download;name=mysample.txt')
-    ->header_is( 'Content-Disposition' => 'attachment;filename=mysample.txt' );
+    ->content_type_is('application/pdf;name=mysample.txt')
+    ->header_is( 'Content-Disposition' => 'inline;filename=mysample.txt' );
 
 $t->get_ok('/default' => { 'Range' => 'bytes=5-' })
     ->status_is(206)

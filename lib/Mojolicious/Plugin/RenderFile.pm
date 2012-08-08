@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use File::Basename;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub register {
     my ( $self, $app ) = @_;
@@ -20,12 +20,15 @@ sub register {
             return;
         }
 
-        my $filename = $args{filename} || fileparse($filepath);
-        my $status   = $args{status}   || 200;
+        my $filename            = $args{filename}             || fileparse($filepath);
+        my $status              = $args{status}               || 200;
+        my $content_type        = $args{content_type}         || 'application/x-download';
+        my $content_disposition = $args{content_disposition}  || 'attachment';
 
         my $headers = Mojo::Headers->new();
-        $headers->add( 'Content-Type',        'application/x-download;name=' . $filename );
-        $headers->add( 'Content-Disposition', 'attachment;filename=' . $filename );
+        $headers->add( 'Content-Type', $content_type . ';name=' . $filename );
+        $headers->add( 'Content-Disposition', $content_disposition . ';filename=' . $filename )
+            unless $args{no_content_dispo};
 
         # Asset
         my $asset = Mojo::Asset::File->new( path => $filepath );
@@ -73,7 +76,7 @@ sub register {
 
 =head1 NAME
 
-Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious  
+Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious
 
 =head1 SYNOPSIS
 
@@ -82,26 +85,34 @@ Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious
 
     # Mojolicious::Lite
     plugin 'RenderFile';
-    
+
     # In controller
-    $self->render_file(filepath => '/tmp/files/file.pdf'); # file name will be "file.pdf"
-     
+    $self->render_file('filepath' => '/tmp/files/file.pdf'); # file name will be "file.pdf"
+
     # Provide any file name
-    $self->render_file(filepath => '/tmp/files/file.pdf',  'filename' => 'report.pdf');
+    $self->render_file('filepath' => '/tmp/files/file.pdf',  'filename' => 'report.pdf');
+
+    # Open file in browser(do not show save dialog)
+    $self->render_file(
+        'filepath'            => '/tmp/files/file.pdf',
+        'content_type'        => 'application/pdf',      # default 'application/x-download'
+        'content_disposition' => 'inline',               # default 'attachment'
+    );
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_file" helper. It does not read file in memory and just streaming it to client. 
+L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_file" helper. It does not read file in memory and just streaming it to client.
 
 =head1 HELPERS
 
 =head2 C<render_file>
 
-    $self->render_file(filepath => '/tmp/files/file.pdf',  'filename' => 'report.pdf');
+    $self->render_file(filepath => '/tmp/files/file.pdf',  'filename' => 'report.pdf' );
 
-With this helper you can easily provide files for download. By default content-type is "application/x-download". Therefore, a browser will ask where to save file.
+With this helper you can easily provide files for download. By default "content_type" is "application/x-download" and "content_disposition" is "attachment".
+Therefore, a browser will ask where to save file.
 
-This plugin respects HTTP Range headers. 
+This plugin respects HTTP Range headers.
 
 Register plugin in L<Mojolicious> application.
 
