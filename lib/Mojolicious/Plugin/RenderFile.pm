@@ -103,7 +103,10 @@ Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious
     $self->render_file('filepath' => '/tmp/files/file.pdf'); # file name will be "file.pdf"
 
     # Provide any file name
-    $self->render_file('filepath' => '/tmp/files/file.pdf',  'filename' => 'report.pdf');
+    $self->render_file('filepath' => '/tmp/files/file.pdf', 'filename' => 'report.pdf');
+
+    # Render data from memory as file
+    $self->render_file('data' => 'some data here', 'filename' => 'report.pdf');
 
     # Open file in browser(do not show save dialog)
     $self->render_file(
