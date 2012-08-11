@@ -4,8 +4,9 @@ use Mojo::Base 'Mojolicious::Plugin';
 use strict;
 use warnings;
 use File::Basename;
+use Mojo::Util 'quote';
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 sub register {
     my ( $self, $app ) = @_;
@@ -13,33 +14,48 @@ sub register {
     $app->helper( 'render_file' => sub {
         my $c        = shift;
         my %args     = @_;
-        my $filepath = $args{filepath};
 
-        unless ( -f $filepath && -r $filepath ) {
-            $c->app->log->error("Cannot read file [$filepath]. error [$!]");
+        my $filename            = $args{filename};
+        my $status              = $args{status}               || 200;
+        my $content_disposition = $args{content_disposition}  || 'attachment';
+
+        # Content type based on format
+        my $content_type;
+        $content_type = $c->app->types->type( $args{format} ) if $args{format};
+        $content_type ||= 'application/x-download';
+
+        # Create asset
+        my $asset;
+        if ( my $filepath = $args{filepath} ) {
+            unless ( -f $filepath && -r $filepath ) {
+                $c->app->log->error("Cannot read file [$filepath]. error [$!]");
+                return;
+            }
+
+            $filename ||= fileparse($filepath);
+            $asset = Mojo::Asset::File->new( path => $filepath );
+        } elsif ( $args{data} ) {
+            $filename ||= $c->req->url->path->parts->[-1] || 'download';
+            $asset = Mojo::Asset::Memory->new();
+            $asset->add_chunk( $args{data} );
+        } else {
+            $c->app->log->error('You must provide "data" or "filepath" option');
             return;
         }
 
-        my $filename            = $args{filename}             || fileparse($filepath);
-        my $status              = $args{status}               || 200;
-        my $content_type        = $args{content_type}         || 'application/x-download';
-        my $content_disposition = $args{content_disposition}  || 'attachment';
+        # Create response headers
+        $filename = quote($filename); # quote the filename, per RFC 5987
 
         my $headers = Mojo::Headers->new();
         $headers->add( 'Content-Type', $content_type . ';name=' . $filename );
-        $headers->add( 'Content-Disposition', $content_disposition . ';filename=' . $filename )
-            unless $args{no_content_dispo};
-
-        # Asset
-        my $asset = Mojo::Asset::File->new( path => $filepath );
+        $headers->add( 'Content-Disposition', $content_disposition . ';filename=' . $filename );
 
         # Range
         # Partially based on Mojolicious::Static
-        my $size = ( stat $filepath )[7];
         if ( my $range = $c->req->headers->range ) {
-
             my $start = 0;
-            my $end = $size - 1 >= 0 ? $size - 1 : 0;
+            my $size  = $asset->size;
+            my $end   = $size - 1 >= 0 ? $size - 1 : 0;
 
             # Check range
             if ( $range =~ m/^bytes=(\d+)-(\d+)?/ && $1 <= $end ) {
@@ -49,21 +65,18 @@ sub register {
                 $status = 206;
                 $headers->add( 'Content-Length' => $end - $start + 1 );
                 $headers->add( 'Content-Range'  => "bytes $start-$end/$size" );
-            }
-
-            # Not satisfiable
-            else {
+            } else {
+                # Not satisfiable
                 return $c->rendered(416);
             }
 
             # Set range for asset
             $asset->start_range($start)->end_range($end);
+        } else {
+            $headers->add( 'Content-Length' => $asset->size );
         }
 
-        else {
-            $headers->add( 'Content-Length' => $size );
-        }
-
+        # Set response headers
         $c->res->content->headers($headers);
 
         # Stream content directly from file
@@ -94,27 +107,58 @@ Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious
 
     # Open file in browser(do not show save dialog)
     $self->render_file(
-        'filepath'            => '/tmp/files/file.pdf',
-        'content_type'        => 'application/pdf',      # default 'application/x-download'
-        'content_disposition' => 'inline',               # default 'attachment'
+        'filepath' => '/tmp/files/file.pdf',
+        'format'   => 'pdf',                 # will change Content-Type "application/x-download" to "application/pdf"
+        'content_disposition' => 'inline',   # will change Content-Disposition from "attachment" to "inline"
     );
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_file" helper. It does not read file in memory and just streaming it to client.
+L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_file" helper. It does not read file in memory and just streaming it to a client.
 
 =head1 HELPERS
 
 =head2 C<render_file>
 
-    $self->render_file(filepath => '/tmp/files/file.pdf',  'filename' => 'report.pdf' );
+    $self->render_file(filepath => '/tmp/files/file.pdf', 'filename' => 'report.pdf' );
 
-With this helper you can easily provide files for download. By default "content_type" is "application/x-download" and "content_disposition" is "attachment".
-Therefore, a browser will ask where to save file.
+With this helper you can easily provide files for download. By default "Content-Type" header is "application/x-download" and "content_disposition" option value is "attachment".
+Therefore, a browser will ask where to save file. You can provide "format" option to change "Content-Type" header.
+
+
+=head3 Supported Options:
+
+=over
+
+=item C<filepath>
+
+Path on the filesystem to the file. You must always pass "filepath" or "data" option
+
+=item C<data>
+
+Binary content which will be transfered to browser. You must always pass "filepath" or "data" option
+
+=item C<filename> (optional)
+
+Browser will use this name for saving the file
+
+=item C<format> (optional)
+
+The "Content-Type" header is based on the MIME type mapping of the "format" option value.  These mappings can be easily extended or changed with L<Mojolicious/"types">.
+
+By default "Content-Type" header is "application/x-download"
+
+=item C<content_disposition> (optional)
+
+Tells browser how to present the file.
+
+"attachment" (default) - is for dowloading
+
+"inline" - is for showing file inline
+
+=back
 
 This plugin respects HTTP Range headers.
-
-Register plugin in L<Mojolicious> application.
 
 =head1 AUTHOR
 

@@ -18,27 +18,58 @@ Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious
 
     # Open file in browser(do not show save dialog)
     $self->render_file(
-        'filepath'            => '/tmp/files/file.pdf',
-        'content_type'        => 'application/pdf',      # default 'application/x-download'
-        'content_disposition' => 'inline',               # default 'attachment'
+        'filepath' => '/tmp/files/file.pdf',
+        'format'   => 'pdf',                 # will change Content-Type "application/x-download" to "application/pdf"
+        'content_disposition' => 'inline',   # will change Content-Disposition from "attachment" to "inline"
     );
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_file" helper. It does not read file in memory and just streaming it to client.
+L<Mojolicious::Plugin::RenderFile> is a L<Mojolicious> plugin that adds "render_file" helper. It does not read file in memory and just streaming it to a client.
 
 =head1 HELPERS
 
 =head2 C<render_file>
 
-    $self->render_file(filepath => '/tmp/files/file.pdf',  'filename' => 'report.pdf' );
+    $self->render_file(filepath => '/tmp/files/file.pdf', 'filename' => 'report.pdf' );
 
-With this helper you can easily provide files for download. By default "content_type" is "application/x-download" and "content_disposition" is "attachment".
-Therefore, a browser will ask where to save file.
+With this helper you can easily provide files for download. By default "Content-Type" header is "application/x-download" and "content_disposition" option value is "attachment".
+Therefore, a browser will ask where to save file. You can provide "format" option to change "Content-Type" header.
+
+
+=head3 Supported Options:
+
+=over
+
+=item C<filepath>
+
+Path on the filesystem to the file. You must always pass "filepath" or "data" option
+
+=item C<data>
+
+Binary content which will be transfered to browser. You must always pass "filepath" or "data" option
+
+=item C<filename> (optional)
+
+Browser will use this name for saving the file
+
+=item C<format> (optional)
+
+The "Content-Type" header is based on the MIME type mapping of the "format" option value.  These mappings can be easily extended or changed with L<Mojolicious/"types">.
+
+By default "Content-Type" header is "application/x-download"
+
+=item C<content_disposition> (optional)
+
+Tells browser how to present the file.
+
+"attachment" (default) - is for dowloading
+
+"inline" - is for showing file inline
+
+=back
 
 This plugin respects HTTP Range headers.
-
-Register plugin in L<Mojolicious> application.
 
 =head1 AUTHOR
 
