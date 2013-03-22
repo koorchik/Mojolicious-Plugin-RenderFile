@@ -14,3 +14,7 @@ Revision history for Mojolicious::Plugin::RenderFile
 
 0.04
         Replaced "content_type" option with "format" option. Added "data" option
+
+0.06
+        Multibyte filenames support.
+        Updated Mojolicious version dependency.
