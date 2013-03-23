@@ -5,3 +5,5 @@ README.pod
 lib/Mojolicious/Plugin/RenderFile.pm
 t/basic.t
 t/sample.txt
+t/multibyte_filename.t
+t/漢字.txt
