@@ -7,7 +7,7 @@ use File::Basename;
 use Encode qw( encode decode_utf8 );
 use Mojo::Util 'quote';
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub register {
     my ( $self, $app ) = @_;
@@ -16,7 +16,10 @@ sub register {
         my $c        = shift;
         my %args     = @_;
 
-        my $filename            = decode_utf8($args{filename});
+        utf8::decode($args{filename}) if $args{filename} && !utf8::is_utf8($args{filename});
+        utf8::decode($args{filepath}) if $args{filepath} && !utf8::is_utf8($args{filepath});
+
+        my $filename            = $args{filename};
         my $status              = $args{status}               || 200;
         my $content_disposition = $args{content_disposition}  || 'attachment';
 
@@ -27,7 +30,7 @@ sub register {
 
         # Create asset
         my $asset;
-        if ( my $filepath = decode_utf8($args{filepath}) ) {
+        if ( my $filepath = $args{filepath} ) {
             unless ( -f $filepath && -r $filepath ) {
                 $c->app->log->error("Cannot read file [$filepath]. error [$!]");
                 return;
@@ -180,5 +183,13 @@ Please report any bugs or feature requests to Github L<https://github.com/koorch
 =head1 SEE ALSO
 
 L<Mojolicious>, L<Mojolicious::Guides>, L<http://mojolicio.us>.
+
+Copyright 2011 Viktor Turskyi
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
 
 =cut

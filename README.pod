@@ -90,4 +90,14 @@ Please report any bugs or feature requests to Github L<https://github.com/koorch
 
 L<Mojolicious>, L<Mojolicious::Guides>, L<http://mojolicio.us>.
 
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2011 Viktor Turskyi
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
+
 =cut

@@ -18,3 +18,8 @@ Revision history for Mojolicious::Plugin::RenderFile
 0.06
         Multibyte filenames support.
         Updated Mojolicious version dependency to 3.90
+
+0.07
+
+        Added license
+        Fixed utf8 filename issue
