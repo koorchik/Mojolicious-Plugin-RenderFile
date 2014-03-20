@@ -167,8 +167,6 @@ Tells browser how to present the file.
 
 "inline" - is for showing file inline
 
-=back
-
 =item C<cleanup> (optional)
 
 Indicates if the file should be deleted when redering is complete
