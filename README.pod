@@ -24,6 +24,7 @@ Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious
         'filepath' => '/tmp/files/file.pdf',
         'format'   => 'pdf',                 # will change Content-Type "application/x-download" to "application/pdf"
         'content_disposition' => 'inline',   # will change Content-Disposition from "attachment" to "inline"
+        'cleanup'  => 1,                     # delete file after completed
     );
 
 =head1 DESCRIPTION
@@ -70,6 +71,10 @@ Tells browser how to present the file.
 
 "inline" - is for showing file inline
 
+=item C<cleanup> (optional)
+
+Indicates if the file should be deleted when rendering is complete
+
 =back
 
 This plugin respects HTTP Range headers.
@@ -89,8 +94,6 @@ Please report any bugs or feature requests to Github L<https://github.com/koorch
 =head1 SEE ALSO
 
 L<Mojolicious>, L<Mojolicious::Guides>, L<http://mojolicio.us>.
-
-=head1 LICENSE AND COPYRIGHT
 
 Copyright 2011 Viktor Turskyi
 

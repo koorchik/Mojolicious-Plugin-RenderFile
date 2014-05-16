@@ -7,7 +7,7 @@ use File::Basename;
 use Encode qw( encode decode_utf8 );
 use Mojo::Util 'quote';
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 sub register {
     my ( $self, $app ) = @_;
@@ -169,7 +169,7 @@ Tells browser how to present the file.
 
 =item C<cleanup> (optional)
 
-Indicates if the file should be deleted when redering is complete
+Indicates if the file should be deleted when rendering is complete
 
 =back
 
