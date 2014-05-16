@@ -22,6 +22,7 @@ sub register {
         my $filename            = $args{filename};
         my $status              = $args{status}               || 200;
         my $content_disposition = $args{content_disposition}  || 'attachment';
+        my $cleanup             = $args{cleanup} // 0;
 
         # Content type based on format
         my $content_type;
@@ -38,6 +39,7 @@ sub register {
 
             $filename ||= fileparse($filepath);
             $asset = Mojo::Asset::File->new( path => $filepath );
+            $asset->cleanup($cleanup);
         } elsif ( $args{data} ) {
             $filename ||= $c->req->url->path->parts->[-1] || 'download';
             $asset = Mojo::Asset::Memory->new();
@@ -118,6 +120,7 @@ Mojolicious::Plugin::RenderFile - "render_file" helper for Mojolicious
         'filepath' => '/tmp/files/file.pdf',
         'format'   => 'pdf',                 # will change Content-Type "application/x-download" to "application/pdf"
         'content_disposition' => 'inline',   # will change Content-Disposition from "attachment" to "inline"
+        'cleanup'  => 1,                     # delete file after completed
     );
 
 =head1 DESCRIPTION
@@ -163,6 +166,10 @@ Tells browser how to present the file.
 "attachment" (default) - is for dowloading
 
 "inline" - is for showing file inline
+
+=item C<cleanup> (optional)
+
+Indicates if the file should be deleted when redering is complete
 
 =back
 
