@@ -1,3 +1,4 @@
+use utf8;
 use Mojo::Base -strict;
 
 use Test::More;
@@ -51,7 +52,7 @@ my $t = Test::Mojo->new;
 
 $t->get_ok("/default")
     ->status_is(200)
-    ->content_is( encode_utf8 '漢字（かんじ）は、古代中国に発祥を持つ文字。' )
+    ->content_is( '漢字（かんじ）は、古代中国に発祥を持つ文字。' )
     ->header_is( 'Content-Disposition' => encode_utf8 'attachment;filename="漢字.txt"' );
 
 $t->get_ok("/filename")
