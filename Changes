@@ -25,3 +25,6 @@ Revision history for Mojolicious::Plugin::RenderFile
 
 0.08
         File cleanup support
+
+0.09
+        Not loose previously setted headers

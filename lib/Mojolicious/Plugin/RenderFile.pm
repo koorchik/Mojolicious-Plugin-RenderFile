@@ -7,7 +7,7 @@ use File::Basename;
 use Encode qw( encode decode_utf8 );
 use Mojo::Util 'quote';
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 sub register {
     my ( $self, $app ) = @_;
@@ -49,11 +49,12 @@ sub register {
             return;
         }
 
-        # Create response headers
+        # Set response headers
+        my $headers = $c->res->content->headers();
+
         $filename = quote($filename); # quote the filename, per RFC 5987
         $filename = encode("UTF-8", $filename);
 
-        my $headers = Mojo::Headers->new();
         $headers->add( 'Content-Type', $content_type . ';name=' . $filename );
         $headers->add( 'Content-Disposition', $content_disposition . ';filename=' . $filename );
 
@@ -82,9 +83,6 @@ sub register {
         } else {
             $headers->add( 'Content-Length' => $asset->size );
         }
-
-        # Set response headers
-        $c->res->content->headers($headers);
 
         # Stream content directly from file
         $c->res->content->asset($asset);
@@ -182,6 +180,7 @@ Viktor Turskyi <koorchik@cpan.org>
 =head1 CONTRIBUTORS
 
 Nils Diewald (Akron)
+Danil Greben (SDSWanderer)
 
 =head1 BUGS
 
