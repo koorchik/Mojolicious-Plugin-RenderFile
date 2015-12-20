@@ -7,7 +7,7 @@ use File::Basename;
 use Encode qw( encode decode_utf8 );
 use Mojo::Util 'quote';
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 sub register {
     my ( $self, $app ) = @_;

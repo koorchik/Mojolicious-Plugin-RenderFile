@@ -28,3 +28,6 @@ Revision history for Mojolicious::Plugin::RenderFile
 
 0.09
         Not loose previously setted headers
+
+0.10
+        Do not include unicode in distro
