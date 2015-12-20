@@ -3,6 +3,8 @@ use Mojo::Base -strict;
 
 use Test::More;
 use Encode;
+use File::Copy qw( copy );
+use File::Temp qw( tempdir );
 
 use Mojolicious::Lite;
 use Test::Mojo;
@@ -13,7 +15,9 @@ use utf8;
 use File::Basename qw/dirname/;
 use File::Spec::Functions qw/rel2abs/;
 
-my $FILE = rel2abs( dirname(__FILE__) . '/' . '漢字.txt' );
+my $FILE = rel2abs( tempdir( CLEANUP => 1)  . '/' . '漢字.txt' );
+copy( rel2abs( dirname(__FILE__) . '/' . 'unicode.txt' ), $FILE) 
+  || plan skip_all => 'unable to create file with unicode filename';
 
 plugin 'RenderFile';
 
