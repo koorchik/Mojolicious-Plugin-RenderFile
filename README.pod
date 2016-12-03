@@ -63,6 +63,16 @@ The "Content-Type" header is based on the MIME type mapping of the "format" opti
 
 By default "Content-Type" header is "application/x-download"
 
+You cannot pass both the "format" and the "content_type" option, as they are mutually exclusive.
+
+=item C<content_type> (optional)
+
+With this option, the "Content-Type" can be set directly.
+
+By default "Content-Type" header is "application/x-download"
+
+You cannot pass both the "format" and the "content_type" option, as they are mutually exclusive.
+
 =item C<content_disposition> (optional)
 
 Tells browser how to present the file.
