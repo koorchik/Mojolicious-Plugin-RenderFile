@@ -31,3 +31,6 @@ Revision history for Mojolicious::Plugin::RenderFile
 
 0.10
         Do not include unicode in distro
+
+0.11
+        Add "content_type" option

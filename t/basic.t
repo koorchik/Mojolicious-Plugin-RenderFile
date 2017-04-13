@@ -24,6 +24,14 @@ get '/data' => sub {
     $self->render_file( data => 'data to download', filename => 'sample.txt' );
 };
 
+get '/data/custom_content_type' => sub {
+    my $self = shift;
+    $self->render_file(
+        data         => 'data to download',
+        filename     => 'sample.txt',
+        content_type => 'application/pdf'
+    );
+};
 
 get '/data/no_filename' => sub {
     my $self = shift;
@@ -40,6 +48,7 @@ get '/all_attrs' => sub {
         content_disposition => 'inline'
     );
 };
+
 
 my $t = Test::Mojo->new;
 
@@ -86,6 +95,12 @@ $t->get_ok('/data' => { 'Range' => 'bytes=5-6' })
     ->status_is(206)
     ->content_is('to')
     ->content_type_is('application/x-download;name="sample.txt"')
+    ->header_is( 'Content-Disposition' => 'attachment;filename="sample.txt"' );
+
+$t->get_ok('/data/custom_content_type' => { 'Range' => 'bytes=5-6' })
+    ->status_is(206)
+    ->content_is('to')
+    ->content_type_is('application/pdf;name="sample.txt"')
     ->header_is( 'Content-Disposition' => 'attachment;filename="sample.txt"' );
 
 $t->get_ok('/data/no_filename')
