@@ -148,7 +148,7 @@ Path on the filesystem to the file. You must always pass "filepath" or "data" op
 
 =item C<data>
 
-Binary content which will be transfered to browser. You must always pass "filepath" or "data" option
+Binary content which will be transferred to browser. You must always pass "filepath" or "data" option
 
 =item C<filename> (optional)
 
