@@ -25,8 +25,10 @@ sub register {
         my $cleanup             = $args{cleanup} // 0;
 
         # Content type based on format
-		$c->app->log->error('You cannot provide both "format" and "content_type" option');
-        return if $args{format} && $args{content_type};
+        if ($args{format} && $args{content_type}) {
+            $c->app->log->error('You cannot provide both "format" and "content_type" option');
+            return;
+        }
 
         my $content_type = $args{content_type};
         $content_type ||= $c->app->types->type( $args{format} ) if $args{format};
